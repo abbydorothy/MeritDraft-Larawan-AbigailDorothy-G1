@@ -1,0 +1,13 @@
+{% extends "base.html" %}{% block title %}Login · MeritDraft{% endblock %}
+{% block content %}
+<div class="card narrow">
+  <h1>Log in</h1>
+  <form method="post" novalidate>{% csrf_token %}
+    {{ form.non_field_errors }}
+    {% include "accounts/_form_fields.html" %}
+    <input type="hidden" name="next" value="{{ next }}">
+    <button class="btn" type="submit">Log in</button>
+  </form>
+  <p>No account yet? <a href="{% url 'accounts:register' %}">Register</a></p>
+</div>
+{% endblock %}
