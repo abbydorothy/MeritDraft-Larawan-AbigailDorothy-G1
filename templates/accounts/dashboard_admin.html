@@ -1,0 +1,18 @@
+{% extends "base.html" %}{% block title %}Admin Dashboard · MeritDraft{% endblock %}
+{% block content %}
+<div class="layout">{% include "accounts/_sidebar.html" %}
+<section>
+  <div class="card"><h1>Welcome, {{ user.display_name }}!</h1>
+  <p class="muted">Admin dashboard — oversee users and keep an auditable view of who contributed what.</p></div>
+  <div class="grid">
+    <div class="card"><h2>Total Users</h2><div class="stat">{{ counts.total }}</div></div>
+    <div class="card"><h2>Students</h2><div class="stat">{{ counts.students }}</div></div>
+    <div class="card"><h2>Admins</h2><div class="stat">{{ counts.admins }}</div></div>
+  </div>
+  <div class="card"><h2>Recently registered</h2>
+    <table><tr><th>Username</th><th>Name</th><th>Role</th><th>Joined</th></tr>
+    {% for u in recent %}<tr><td>{{ u.username }}</td><td>{{ u.display_name }}</td><td>{{ u.get_role_display }}</td><td>{{ u.date_joined|date:"M d, Y" }}</td></tr>
+    {% empty %}<tr><td colspan="4" class="muted">No users yet.</td></tr>{% endfor %}</table>
+  </div>
+</section></div>
+{% endblock %}
