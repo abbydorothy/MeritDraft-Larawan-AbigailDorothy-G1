@@ -1,0 +1,18 @@
+{% extends "base.html" %}{% block title %}My Profile · MeritDraft{% endblock %}
+{% block content %}
+<div class="layout">{% include "accounts/_sidebar.html" %}
+<section class="card">
+  <h1>My Profile</h1>
+  {% if profile_user.profile_photo %}<img class="avatar" src="{{ profile_user.profile_photo.url }}" alt="Profile photo">
+  {% else %}<div class="avatar">{{ profile_user.username|slice:":1"|upper }}</div>{% endif %}
+  <table>
+    <tr><th>Username</th><td>{{ profile_user.username }}</td></tr>
+    <tr><th>Full name</th><td>{{ profile_user.get_full_name|default:"—" }}</td></tr>
+    <tr><th>Email</th><td>{{ profile_user.email }}</td></tr>
+    <tr><th>Contact number</th><td>{{ profile_user.contact_number|default:"—" }}</td></tr>
+    <tr><th>Role</th><td>{{ profile_user.get_role_display }}</td></tr>
+    <tr><th>Member since</th><td>{{ profile_user.date_joined|date:"F d, Y" }}</td></tr>
+  </table>
+  <a class="btn" href="{% url 'accounts:profile_edit' %}">Edit profile</a>
+</section></div>
+{% endblock %}
