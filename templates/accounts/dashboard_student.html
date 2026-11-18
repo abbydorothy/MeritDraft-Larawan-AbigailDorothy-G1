@@ -3,11 +3,31 @@
 <div class="layout">{% include "accounts/_sidebar.html" %}
 <section>
   <div class="card"><h1>Welcome, {{ user.display_name }}!</h1>
-  <p class="muted">Student dashboard — join group projects, submit edits to the shared paper and earn points for approved changes. Your role (Leader or Member) is set per project.</p></div>
+  <p class="muted">Student dashboard — your role (Leader or Member) and your points are tracked per project.</p></div>
   <div class="grid">
-    <div class="card"><h2>My Projects</h2><p class="muted">Projects you belong to, with your role in each (coming in the next phase).</p></div>
-    <div class="card"><h2>Submit a Change</h2><p class="muted">Upload a draft to generate a diff (coming soon).</p></div>
-    <div class="card"><h2>My Points</h2><div class="stat">0</div><p class="muted">Approved contributions only.</p></div>
+    <div class="card"><h2>Projects</h2><div class="stat">{{ rows|length }}</div></div>
+    <div class="card"><h2>To review</h2><div class="stat">{{ to_review }}</div><p class="muted">Pending changes in projects you lead.</p></div>
+    <div class="card"><h2>My pending</h2><div class="stat">{{ my_pending }}</div><p class="muted">Your changes awaiting review.</p></div>
+  </div>
+  <div class="card">
+    <div class="row"><h2>My projects</h2><a class="btn small" href="{% url 'projects:create' %}">+ New project</a></div>
+    {% if rows %}
+    <div class="table-wrap"><table>
+      <tr><th>Project</th><th>My role</th><th>My points here</th><th>Changes to review</th></tr>
+      {% for r in rows %}
+      <tr><td><a href="{{ r.project.get_absolute_url }}">{{ r.project.name }}</a></td>
+        <td><span class="badge {{ r.role }}">{{ r.role|title }}</span></td>
+        <td class="pts">{{ r.points|floatformat:1 }}</td>
+        <td>{% if r.role == 'leader' %}{{ r.to_review }}{% else %}—{% endif %}</td></tr>
+      {% endfor %}
+    </table></div>
+    {% else %}<p class="muted">You're not in any project yet. Create one to become its Leader.</p>{% endif %}
+  </div>
+  <div class="card"><h2>Recent submissions</h2>
+    {% if recent %}<table><tr><th>Project</th><th>Tag</th><th>Status</th><th></th></tr>
+      {% for c in recent %}<tr><td>{{ c.project.name }}</td><td>{{ c.get_tag_display }}</td>
+        <td><span class="badge {{ c.status }}">{{ c.get_status_display }}</span></td><td><a href="{{ c.get_absolute_url }}">View</a></td></tr>{% endfor %}</table>
+    {% else %}<p class="muted">Nothing submitted yet.</p>{% endif %}
   </div>
 </section></div>
 {% endblock %}
