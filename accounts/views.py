@@ -95,6 +95,11 @@ def instructor_dashboard(request):
     return render(request, "accounts/dashboard_instructor.html", context)
 
 
+@role_required(User.Role.INSTRUCTOR)
+def instructor_dashboard(request):
+    return render(request, "accounts/dashboard_instructor.html")
+
+
 @role_required(User.Role.ADMIN)
 def admin_dashboard(request):
     counts = {
