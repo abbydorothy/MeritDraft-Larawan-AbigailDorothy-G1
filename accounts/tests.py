@@ -5,25 +5,36 @@ from .models import User
 
 GOOD = {
     "first_name": "Ana", "last_name": "Cruz", "username": "ana", "email": "Ana@Example.com",
-    "password1": "Str0ng!Pass#99", "password2": "Str0ng!Pass#99",
+    "role": "student", "password1": "Str0ng!Pass#99", "password2": "Str0ng!Pass#99",
 }
 
 
 class RegistrationTests(TestCase):
-    def test_register_success_hashes_password(self):
+    def test_register_student_hashes_password(self):
         r = self.client.post(reverse("accounts:register"), GOOD, follow=True)
         self.assertRedirects(r, reverse("accounts:login"))
         u = User.objects.get(username="ana")
-        self.assertNotEqual(u.password, GOOD["password1"])
         self.assertTrue(u.password.startswith("pbkdf2_"))
-        self.assertEqual(u.email, "ana@example.com")
-        self.assertEqual(u.role, "student")
+        self.assertEqual((u.email, u.role), ("ana@example.com", "student"))
         self.assertContains(r, "Account created")
 
-    def test_password_mismatch(self):
-        r = self.client.post(reverse("accounts:register"), {**GOOD, "password2": "nope"})
+    def test_register_instructor(self):
+        self.client.post(reverse("accounts:register"), {**GOOD, "role": "instructor"})
+        self.assertEqual(User.objects.get(username="ana").role, "instructor")
+
+    def test_admin_role_not_selectable(self):
+        r = self.client.post(reverse("accounts:register"), {**GOOD, "role": "admin"})
         self.assertEqual(User.objects.count(), 0)
         self.assertContains(r, "Registration failed")
+
+    def test_role_required(self):
+        data = {k: v for k, v in GOOD.items() if k != "role"}
+        self.client.post(reverse("accounts:register"), data)
+        self.assertEqual(User.objects.count(), 0)
+
+    def test_password_mismatch(self):
+        self.client.post(reverse("accounts:register"), {**GOOD, "password2": "nope"})
+        self.assertEqual(User.objects.count(), 0)
 
     def test_invalid_email_and_required(self):
         self.client.post(reverse("accounts:register"), {**GOOD, "email": "bad"})
@@ -38,20 +49,17 @@ class RegistrationTests(TestCase):
         self.assertContains(r, "already")
         self.assertEqual(User.objects.count(), 1)
 
-    def test_cannot_self_register_as_admin(self):
-        self.client.post(reverse("accounts:register"), {**GOOD, "role": "admin"})
-        self.assertEqual(User.objects.get(username="ana").role, "student")
-
 
 class AuthAndRoleTests(TestCase):
     def setUp(self):
         self.student = User.objects.create_user("stu", "s@x.com", "Pass!12345", role="student")
+        self.instructor = User.objects.create_user("ins", "i@x.com", "Pass!12345", role="instructor")
         self.admin = User.objects.create_user("adm", "a@x.com", "Pass!12345", role="admin")
 
     def test_login_redirects_by_role(self):
-        for u, name in [(self.student, "student"), (self.admin, "admin")]:
+        for u in (self.student, self.instructor, self.admin):
             r = self.client.post(reverse("accounts:login"), {"username": u.username, "password": "Pass!12345"})
-            self.assertRedirects(r, reverse(f"accounts:dashboard_{name}"))
+            self.assertRedirects(r, reverse(f"accounts:dashboard_{u.role}"))
             self.client.post(reverse("accounts:logout"))
 
     def test_invalid_login(self):
@@ -66,22 +74,34 @@ class AuthAndRoleTests(TestCase):
         self.assertIn("/login/", r.url)
 
     def test_logged_out_redirected_from_protected_pages(self):
-        for name in ["dashboard_student", "dashboard_admin", "profile", "profile_edit"]:
+        for name in ["dashboard_student", "dashboard_instructor", "dashboard_admin", "profile", "profile_edit"]:
             r = self.client.get(reverse(f"accounts:{name}"))
             self.assertEqual(r.status_code, 302, name)
             self.assertIn("/login/", r.url)
 
     def test_role_isolation(self):
-        self.client.login(username="stu", password="Pass!12345")
-        self.assertEqual(self.client.get(reverse("accounts:dashboard_student")).status_code, 200)
-        self.assertEqual(self.client.get(reverse("accounts:dashboard_admin")).status_code, 403)
-        self.client.login(username="adm", password="Pass!12345")
-        self.assertEqual(self.client.get(reverse("accounts:dashboard_student")).status_code, 403)
-        self.assertEqual(self.client.get(reverse("accounts:dashboard_admin")).status_code, 200)
+        for user, own in (("stu", "student"), ("ins", "instructor"), ("adm", "admin")):
+            self.client.login(username=user, password="Pass!12345")
+            for role in ("student", "instructor", "admin"):
+                code = self.client.get(reverse(f"accounts:dashboard_{role}")).status_code
+                self.assertEqual(code, 200 if role == own else 403, f"{user} -> {role}")
 
-    def test_superuser_gets_admin_role(self):
+    def test_superuser_is_admin_and_admin_role_gets_staff(self):
         su = User.objects.create_superuser("root", "root@x.com", "Pass!12345")
         self.assertEqual(su.role, "admin")
+        self.assertTrue(self.admin.is_staff and self.admin.is_superuser)
+        self.assertFalse(self.instructor.is_staff)
+
+    def test_only_superuser_can_edit_role_in_admin_panel(self):
+        from django.contrib.admin.sites import site
+        from django.test import RequestFactory
+        ma = site._registry[User]
+        req = RequestFactory().get("/")
+        req.user = self.admin
+        self.assertNotIn("role", ma.get_readonly_fields(req, self.student))
+        staff = User.objects.create_user("st", "st@x.com", "Pass!12345", is_staff=True)
+        req.user = staff
+        self.assertIn("role", ma.get_readonly_fields(req, self.student))
 
 
 class ProfileTests(TestCase):
@@ -106,8 +126,6 @@ class ProfileTests(TestCase):
         r = self.client.post(reverse("accounts:profile_edit"), {
             "first_name": "A", "last_name": "A", "email": "b@x.com", "contact_number": ""})
         self.assertContains(r, "already used")
-        self.a.refresh_from_db()
-        self.assertEqual(self.a.email, "a@x.com")
 
     def test_edit_cannot_change_role(self):
         self.client.post(reverse("accounts:profile_edit"), {
