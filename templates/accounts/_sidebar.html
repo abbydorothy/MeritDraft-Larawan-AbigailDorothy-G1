@@ -1,10 +1,10 @@
 <aside class="card sidebar">
-  <a href="{{ user.dashboard_url }}">Dashboard</a>
+  <a href="{{ user.dashboard_url }}">🏠 Dashboard</a>
   {% if user.role == 'student' %}
-    <a href="#">My Projects</a><a href="#">Submit a Change</a><a href="#">My Points</a><a href="#">Leaderboard</a>
+    <a href="#">📁 My Projects</a><a href="#">✍️ My Submissions</a>
   {% else %}
-    <a href="#">All Projects</a><a href="#">Contribution Audit</a>
-    {% if user.is_staff %}<a href="{% url 'admin:index' %}">Django Admin</a>{% endif %}
+    <a href="#">📁 All Projects</a>
+    {% if user.is_staff %}<a href="{% url 'admin:index' %}">⚙️ Django Admin</a>{% endif %}
   {% endif %}
-  <a href="{% url 'accounts:profile' %}">My Profile</a>
+  <a href="{% url 'accounts:profile' %}">👤 My Profile</a>
 </aside>
