@@ -1,0 +1,11 @@
+{% extends "base.html" %}{% block title %}Instructor Dashboard · MeritDraft{% endblock %}
+{% block content %}
+<div class="layout">{% include "accounts/_sidebar.html" %}
+<section>
+  <div class="card"><h1>Welcome, {{ user.display_name }}!</h1>
+  <p class="muted">Instructor dashboard — a read-only, auditable view of who contributed what in each group project.</p></div>
+  <div class="grid">
+    <div class="card"><h2>All Projects</h2><p class="muted">Group projects and their contribution history (coming soon).</p></div>
+  </div>
+</section></div>
+{% endblock %}

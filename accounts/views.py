@@ -52,10 +52,16 @@ def student_dashboard(request):
     return render(request, "accounts/dashboard_student.html")
 
 
+@role_required(User.Role.INSTRUCTOR)
+def instructor_dashboard(request):
+    return render(request, "accounts/dashboard_instructor.html")
+
+
 @role_required(User.Role.ADMIN)
 def admin_dashboard(request):
     counts = {
         "students": User.objects.filter(role=User.Role.STUDENT).count(),
+        "instructors": User.objects.filter(role=User.Role.INSTRUCTOR).count(),
         "admins": User.objects.filter(role=User.Role.ADMIN).count(),
         "total": User.objects.count(),
     }
