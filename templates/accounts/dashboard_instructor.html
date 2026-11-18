@@ -1,0 +1,20 @@
+{% extends "base.html" %}{% block title %}Instructor Dashboard · MeritDraft{% endblock %}
+{% block content %}
+<div class="layout">{% include "accounts/_sidebar.html" %}
+<section>
+  <div class="card"><h1>Welcome, {{ user.display_name }}!</h1>
+  <p class="muted">Instructor dashboard — a read-only, auditable view of who contributed what in each group project.</p></div>
+  <div class="grid">
+    <div class="card"><h2>Projects</h2><div class="stat">{{ projects|length }}</div></div>
+    <div class="card"><h2>Approved changes</h2><div class="stat">{{ approved_total }}</div></div>
+    <div class="card"><h2>Pending changes</h2><div class="stat">{{ pending_total }}</div></div>
+  </div>
+  <div class="card"><h2>All projects</h2>
+    {% if projects %}<div class="table-wrap"><table>
+      <tr><th>Project</th><th>Members</th><th>Approved</th><th>Pending</th><th>Rejected</th></tr>
+      {% for p in projects %}<tr><td><a href="{{ p.get_absolute_url }}">{{ p.name }}</a></td>
+        <td>{{ p.member_count }}</td><td>{{ p.approved_count }}</td><td>{{ p.pending_count }}</td><td>{{ p.rejected_count }}</td></tr>{% endfor %}
+    </table></div>{% else %}<p class="muted">No projects yet.</p>{% endif %}
+  </div>
+</section></div>
+{% endblock %}
