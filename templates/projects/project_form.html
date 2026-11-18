@@ -1,0 +1,13 @@
+{% extends "base.html" %}{% block title %}{{ heading }} · MeritDraft{% endblock %}
+{% block content %}
+<div class="layout">{% include "accounts/_sidebar.html" %}
+<section class="card">
+  <h1>{{ heading }}</h1>
+  <form method="post" novalidate>{% csrf_token %}
+    {{ form.non_field_errors }}
+    {% include "accounts/_form_fields.html" %}
+    <button class="btn" type="submit">Save</button>
+    <a class="btn secondary" href="{% url 'projects:list' %}">Cancel</a>
+  </form>
+</section></div>
+{% endblock %}

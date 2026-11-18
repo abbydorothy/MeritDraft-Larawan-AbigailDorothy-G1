@@ -1,0 +1,10 @@
+{% extends "base.html" %}{% block title %}Delete project · MeritDraft{% endblock %}
+{% block content %}
+<div class="card narrow"><h1>Delete "{{ project.name }}"?</h1>
+  <p>This permanently deletes the project, its members and <strong>all submitted changes and points</strong>. This cannot be undone.</p>
+  <form method="post">{% csrf_token %}
+    <button class="btn danger" type="submit">Yes, delete project</button>
+    <a class="btn secondary" href="{{ project.get_absolute_url }}">Cancel</a>
+  </form>
+</div>
+{% endblock %}

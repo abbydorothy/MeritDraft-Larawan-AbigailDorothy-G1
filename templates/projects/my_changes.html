@@ -1,0 +1,18 @@
+{% extends "base.html" %}{% block title %}My Submissions · MeritDraft{% endblock %}
+{% block content %}
+<div class="layout">{% include "accounts/_sidebar.html" %}
+<section class="card">
+  <h1>My Submissions</h1>
+  {% if submissions %}
+  <div class="table-wrap"><table>
+    <tr><th>#</th><th>Project</th><th>Tag</th><th>Status</th><th>Points</th><th>Submitted</th><th></th></tr>
+    {% for c in submissions %}
+    <tr><td>{{ c.pk }}</td><td><a href="{{ c.project.get_absolute_url }}">{{ c.project.name }}</a></td><td>{{ c.get_tag_display }}</td>
+      <td><span class="badge {{ c.status }}">{{ c.get_status_display }}</span></td>
+      <td>{% if c.status == 'approved' %}{{ c.points|floatformat:1 }}{% else %}—{% endif %}</td>
+      <td>{{ c.created_at|date:"M d, Y H:i" }}</td><td><a href="{{ c.get_absolute_url }}">View</a></td></tr>
+    {% endfor %}
+  </table></div>
+  {% else %}<p class="muted">You haven't submitted any changes yet. Open one of your projects and click "Submit a change".</p>{% endif %}
+</section></div>
+{% endblock %}

@@ -1,0 +1,23 @@
+{% extends "base.html" %}{% block title %}Projects · MeritDraft{% endblock %}
+{% block content %}
+<div class="layout">{% include "accounts/_sidebar.html" %}
+<section>
+  <div class="card">
+    <div class="row"><h1>{% if user.is_student %}My Projects{% else %}All Projects{% endif %}</h1>
+    {% if user.is_student %}<a class="btn" href="{% url 'projects:create' %}">+ New project</a>{% endif %}</div>
+    {% if not user.is_student %}<p class="muted">Read-only view of every group project.</p>{% endif %}
+    {% if projects %}
+    <div class="table-wrap"><table>
+      <tr><th>Project</th>{% if user.is_student %}<th>My role</th>{% endif %}<th>Members</th><th>Pending changes</th><th>Created</th></tr>
+      {% for p in projects %}
+      <tr><td><a href="{{ p.get_absolute_url }}">{{ p.name }}</a></td>
+        {% if user.is_student %}<td><span class="badge {{ p.my_role }}">{{ p.my_role|title }}</span></td>{% endif %}
+        <td>{{ p.member_count }}</td><td>{{ p.pending_count }}</td><td>{{ p.created_at|date:"M d, Y" }}</td></tr>
+      {% endfor %}
+    </table></div>
+    {% else %}
+      <p class="muted">{% if user.is_student %}You are not in any project yet. Create one, or ask a Leader to add you.{% else %}No projects yet.{% endif %}</p>
+    {% endif %}
+  </div>
+</section></div>
+{% endblock %}

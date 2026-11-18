@@ -1,0 +1,52 @@
+{% extends "base.html" %}{% block title %}Change #{{ change.pk }} · MeritDraft{% endblock %}
+{% block content %}
+<div class="layout">{% include "accounts/_sidebar.html" %}
+<section>
+  <div class="card">
+    <div class="row"><h1>Change #{{ change.pk }}</h1><span class="badge {{ change.status }}">{{ change.get_status_display }}</span></div>
+    <p class="muted">Project: <a href="{{ project.get_absolute_url }}">{{ project.name }}</a></p>
+    <table>
+      <tr><th>Author</th><td>{{ change.author.display_name }} (@{{ change.author.username }})</td></tr>
+      <tr><th>Tag</th><td>{{ change.get_tag_display }}</td></tr>
+      <tr><th>Submitted</th><td>{{ change.created_at|date:"M d, Y H:i" }}</td></tr>
+      {% if change.note %}<tr><th>Note</th><td>{{ change.note }}</td></tr>{% endif %}
+      <tr><th>Words added</th><td>{{ added }} <span class="muted">(removed: {{ removed }})</span></td></tr>
+      <tr><th>{% if change.status == 'approved' %}Points earned{% else %}Points if approved{% endif %}</th>
+        <td class="pts">{% if change.status == 'approved' %}{{ change.points|floatformat:1 }}{% elif change.status == 'pending' %}{{ preview_points|floatformat:1 }}{% else %}—{% endif %}</td></tr>
+      {% if change.reviewer %}<tr><th>Reviewed by</th><td>{{ change.reviewer.username }} on {{ change.reviewed_at|date:"M d, Y H:i" }}</td></tr>
+      {% if change.review_note %}<tr><th>Review note</th><td>{{ change.review_note }}</td></tr>{% endif %}{% endif %}
+    </table>
+    {% if change.is_stale %}<div class="warn" style="margin-top:1rem">The official text changed after this was submitted, so it can't be approved as is. The author must edit and resubmit it.</div>{% endif %}
+  </div>
+
+  <div class="card">
+    <h2>Changes</h2>
+    <p class="muted"><span class="diff-insert">added words</span> &nbsp; <span class="diff-delete">removed words</span></p>
+    <div class="diff">{% for op, text in segments %}<span class="diff-{{ op }}">{{ text }}</span> {% endfor %}</div>
+  </div>
+
+  {% if can_edit %}
+  <div class="card actions">
+    <a class="btn secondary" href="{% url 'projects:change_edit' change.pk %}">Edit</a>
+    <form method="post" action="{% url 'projects:change_delete' change.pk %}" onsubmit="return confirm('Delete this change?')">{% csrf_token %}
+      <button class="btn danger" type="submit">Delete</button></form>
+  </div>
+  {% endif %}
+
+  {% if needs_other_leader %}<div class="warn">You are this change's author, so another Leader of the project must review it.</div>{% endif %}
+
+  {% if can_review %}
+  <div class="card">
+    <h2>Review this change</h2>
+    <form method="post" action="{% url 'projects:change_review' change.pk %}">{% csrf_token %}
+      <label for="review_note">Review note (required when rejecting)</label>
+      <textarea id="review_note" name="review_note" rows="3" maxlength="500"></textarea>
+      <div class="actions" style="margin-top:.8rem">
+        <button class="btn ok" type="submit" name="decision" value="approve">✔ Approve &amp; merge</button>
+        <button class="btn danger" type="submit" name="decision" value="reject">✖ Reject</button>
+      </div>
+    </form>
+  </div>
+  {% endif %}
+</section></div>
+{% endblock %}

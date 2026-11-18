@@ -27,3 +27,22 @@ input[type=file]{border:0;padding:.3rem 0}
 .avatar{width:110px;height:110px;border-radius:50%;object-fit:cover;background:#e5e7eb;display:flex;align-items:center;justify-content:center;font-size:2.5rem;color:var(--muted)}
 table{width:100%;border-collapse:collapse}td,th{text-align:left;padding:.5rem;border-bottom:1px solid #eee}
 @media(max-width:700px){.layout{grid-template-columns:1fr}}
+
+/* ---- projects & changes ---- */
+textarea{width:100%;padding:.6rem;border:1px solid #cbd5e1;border-radius:8px;font:inherit;resize:vertical}
+.row{display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap}
+.actions{display:flex;gap:.5rem;flex-wrap:wrap;align-items:center}
+.actions form{margin:0}
+.btn.small{padding:.3rem .7rem;margin-top:0;font-size:.85rem}
+.btn.danger{background:#b91c1c}.btn.ok{background:#15803d}
+.badge.pending{background:#fef3c7;color:#92400e}.badge.approved{background:#dcfce7;color:#166534}
+.badge.rejected{background:#fee2e2;color:#991b1b}.badge.leader{background:#ede9fe;color:#5b21b6}
+.doc{white-space:pre-wrap;background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:1rem;max-height:320px;overflow:auto}
+.diff{white-space:pre-wrap;line-height:1.8}
+.diff-insert{background:#bbf7d0;border-radius:3px;padding:0 2px}
+.diff-delete{background:#fecaca;text-decoration:line-through;border-radius:3px;padding:0 2px}
+.inline-form{display:flex;gap:.6rem;align-items:flex-end;flex-wrap:wrap}
+.inline-form>div{flex:1;min-width:140px}
+.warn{background:#fef3c7;color:#92400e;padding:.7rem 1rem;border-radius:8px;margin-bottom:1rem}
+.table-wrap{overflow-x:auto}
+.pts{font-weight:700;color:var(--brand)}
