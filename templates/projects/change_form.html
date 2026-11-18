@@ -1,0 +1,16 @@
+{% extends "base.html" %}{% block title %}{{ heading }} · MeritDraft{% endblock %}
+{% block content %}
+<div class="layout">{% include "accounts/_sidebar.html" %}
+<section class="card">
+  <h1>{{ heading }}</h1>
+  <p class="muted">Project: <a href="{{ project.get_absolute_url }}">{{ project.name }}</a>. Edit the text below, then tag your change. The system generates the diff automatically.</p>
+  {% if stale %}<div class="warn">The official text changed since you submitted this. The box below now holds the <strong>latest official text</strong> so you don't overwrite anyone's approved work — re-apply your edit on top of it.
+    <details><summary>Show my previous version</summary><div class="doc">{{ old_proposed }}</div></details></div>{% endif %}
+  <form method="post" novalidate>{% csrf_token %}
+    {{ form.non_field_errors }}
+    {% include "accounts/_form_fields.html" %}
+    <button class="btn" type="submit">Submit</button>
+    <a class="btn secondary" href="{{ project.get_absolute_url }}">Cancel</a>
+  </form>
+</section></div>
+{% endblock %}

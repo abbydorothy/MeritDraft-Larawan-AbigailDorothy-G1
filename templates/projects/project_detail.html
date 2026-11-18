@@ -1,0 +1,63 @@
+{% extends "base.html" %}{% block title %}{{ project.name }} · MeritDraft{% endblock %}
+{% block content %}
+<div class="layout">{% include "accounts/_sidebar.html" %}
+<section>
+  <div class="card">
+    <div class="row"><h1>{{ project.name }}</h1>
+      <div class="actions">
+        {% if membership %}<span class="badge {{ membership.role }}">You: {{ membership.get_role_display }}</span>
+          <a class="btn small" href="{% url 'projects:change_create' project.pk %}">Submit a change</a>{% endif %}
+        {% if is_leader %}<a class="btn small secondary" href="{% url 'projects:edit' project.pk %}">Edit</a>
+          <a class="btn small danger" href="{% url 'projects:delete' project.pk %}">Delete</a>{% endif %}
+      </div>
+    </div>
+    {% if project.description %}<p class="muted">{{ project.description }}</p>{% endif %}
+    {% if not membership %}<div class="warn">Read-only view — you are not a member of this project.</div>{% endif %}
+    <h2>Official text</h2>
+    <div class="doc">{{ project.current_text }}</div>
+  </div>
+
+  <div class="card">
+    <h2>Members &amp; leaderboard</h2>
+    <p class="muted">Points count approved changes in <strong>this project only</strong>.</p>
+    <div class="table-wrap"><table>
+      <tr><th>#</th><th>Member</th><th>Role</th><th>Approved changes</th><th>Points</th>{% if is_leader %}<th>Actions</th>{% endif %}</tr>
+      {% for row in leaderboard %}
+      <tr><td>{{ row.rank }}</td><td>{{ row.membership.user.display_name }} <span class="muted">@{{ row.membership.user.username }}</span></td>
+        <td><span class="badge {{ row.membership.role }}">{{ row.membership.get_role_display }}</span></td>
+        <td>{{ row.approved }}</td><td class="pts">{{ row.points|floatformat:1 }}</td>
+        {% if is_leader %}<td><div class="actions">
+          <form method="post" action="{% url 'projects:member_role' project.pk row.membership.pk %}">{% csrf_token %}
+            <button class="btn small secondary" type="submit">{% if row.membership.is_leader %}Make Member{% else %}Make Leader{% endif %}</button></form>
+          <form method="post" action="{% url 'projects:member_remove' project.pk row.membership.pk %}" onsubmit="return confirm('Remove this member?')">{% csrf_token %}
+            <button class="btn small danger" type="submit">Remove</button></form>
+        </div></td>{% endif %}
+      </tr>
+      {% endfor %}
+    </table></div>
+    {% if add_form %}
+    <h3>Add a member</h3>
+    <form method="post" action="{% url 'projects:member_add' project.pk %}" class="inline-form">{% csrf_token %}
+      <div><label for="id_username">Student username</label>{{ add_form.username }}</div>
+      <div><label for="id_role">Project role</label>{{ add_form.role }}</div>
+      <button class="btn" type="submit" style="margin-top:0">Add</button>
+    </form>
+    {% endif %}
+  </div>
+
+  <div class="card">
+    <h2>Submitted changes {% if pending_count %}<span class="badge pending">{{ pending_count }} pending</span>{% endif %}</h2>
+    {% if changes %}
+    <div class="table-wrap"><table>
+      <tr><th>#</th><th>Author</th><th>Tag</th><th>Status</th><th>Points</th><th>Submitted</th><th></th></tr>
+      {% for c in changes %}
+      <tr><td>{{ c.pk }}</td><td>{{ c.author.username }}</td><td>{{ c.get_tag_display }}</td>
+        <td><span class="badge {{ c.status }}">{{ c.get_status_display }}</span></td>
+        <td>{% if c.status == 'approved' %}{{ c.points|floatformat:1 }}{% else %}—{% endif %}</td>
+        <td>{{ c.created_at|date:"M d, Y H:i" }}</td><td><a href="{{ c.get_absolute_url }}">{% if is_leader and c.status == 'pending' %}Review{% else %}View{% endif %}</a></td></tr>
+      {% endfor %}
+    </table></div>
+    {% else %}<p class="muted">No changes submitted yet.</p>{% endif %}
+  </div>
+</section></div>
+{% endblock %}
