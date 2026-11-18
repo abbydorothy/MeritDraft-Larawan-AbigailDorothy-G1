@@ -11,6 +11,7 @@ urlpatterns = [
     path("login/", views.MeritLoginView.as_view(), name="login"),
     path("logout/", LogoutView.as_view(), name="logout"),
     path("dashboard/student/", views.student_dashboard, name="dashboard_student"),
+    path("dashboard/instructor/", views.instructor_dashboard, name="dashboard_instructor"),
     path("dashboard/admin/", views.admin_dashboard, name="dashboard_admin"),
     path("profile/", views.profile_view, name="profile"),
     path("profile/edit/", views.profile_edit, name="profile_edit"),

@@ -5,14 +5,24 @@ from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 
 from .models import User
 
+SIGNUP_ROLES = [
+    (User.Role.STUDENT, "Student"),
+    (User.Role.INSTRUCTOR, "Instructor"),
+]  # Admin is never offered here: only an existing admin can grant it in the Django admin panel.
+
+
 class RegistrationForm(UserCreationForm):
     first_name = forms.CharField(max_length=150, required=True)
     last_name = forms.CharField(max_length=150, required=True)
     email = forms.EmailField(required=True)
+    role = forms.ChoiceField(
+        choices=SIGNUP_ROLES, initial=User.Role.STUDENT, required=True,
+        help_text="Admin accounts can only be created by an existing admin.",
+    )
 
     class Meta:
         model = User
-        fields = ("first_name", "last_name", "username", "email", "password1", "password2")
+        fields = ("first_name", "last_name", "username", "email", "role", "password1", "password2")
 
     def clean_email(self):
         email = self.cleaned_data["email"].strip().lower()
@@ -28,7 +38,7 @@ class RegistrationForm(UserCreationForm):
 
     def save(self, commit=True):
         user = super().save(commit=False)
-        user.role = User.Role.STUDENT  # public sign-up is always a Student
+        user.role = self.cleaned_data["role"]  # only Student or Instructor can pass validation
         if commit:
             user.save()
         return user
